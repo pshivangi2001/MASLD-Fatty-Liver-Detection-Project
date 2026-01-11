@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASLD Pipeline Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>📊 MASLD Dashboard</h1>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3>Load Results</h3>
+            <label for="folderInput" class="upload-button">
+                📁 Select Results Folder
+            </label>
+            <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;" onchange="handleFolderSelect(event)">
+            <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #6c757d;">
+                Or upload individual files
+            </div>
+            <div id="loadStatus" style="margin-top: 0.5rem;"></div>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3>Navigation</h3>
+            <nav class="nav-menu">
+                <a href="#" onclick="showPage('overview'); return false;">📈 Overview</a>
+                <a href="#" onclick="showPage('metrics'); return false;">📊 Metrics</a>
+                <a href="#" onclick="showPage('calibration'); return false;">📉 Calibration</a>
+                <a href="#" onclick="showPage('uncertainty'); return false;">🎯 Uncertainty & Coverage</a>
+                <a href="#" onclick="showPage('shap'); return false;">🔍 Explainability (SHAP)</a>
+                <a href="#" onclick="showPage('reports'); return false;">🤖 AI Reports</a>
+                <a href="#" onclick="showPage('config'); return false;">⚙️ Configuration</a>
+                <a href="#" onclick="showPage('checker'); return false;">✅ File Checker</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Overview Page -->
+        <div id="overview" class="page active">
+            <h1>📈 Overview</h1>
+            <div class="stats-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Patients</div>
+                    <div class="metric-value" id="totalPatients">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">MASLD Cases</div>
+                    <div class="metric-value" id="masldCases">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Healthy Cases</div>
+                    <div class="metric-value" id="healthyCases">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Run Date</div>
+                    <div class="metric-value" id="runDate">-</div>
+                </div>
+            </div>
+            
+            <h2>Core Visualizations</h2>
+            <div class="plots-grid">
+                <div class="plot-container">
+                    <h3>ROC Curves</h3>
+                    <img id="rocCurves" src="" alt="ROC Curves" onerror="handleImageError(this, 'ROC Curves');">
+                    <div id="rocCurvesError" class="warning" style="display:none;">ROC Curves not found</div>
+                </div>
+                <div class="plot-container">
+                    <h3>PR Curves</h3>
+                    <img id="prCurves" src="" alt="PR Curves" onerror="handleImageError(this, 'PR Curves');">
+                    <div id="prCurvesError" class="warning" style="display:none;">PR Curves not found</div>
+                </div>
+                <div class="plot-container">
+                    <h3>Confusion Matrices</h3>
+                    <img id="confusionMatrices" src="" alt="Confusion Matrices" onerror="handleImageError(this, 'Confusion Matrices');">
+                    <div id="confusionMatricesError" class="warning" style="display:none;">Confusion Matrices not found</div>
+                </div>
+                <div class="plot-container">
+                    <h3>Coverage Curve</h3>
+                    <img id="coverageCurve" src="" alt="Coverage Curve" onerror="handleImageError(this, 'Coverage Curve');">
+                    <div id="coverageCurveError" class="warning" style="display:none;">Coverage Curve not found</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Page -->
+        <div id="metrics" class="page">
+            <h1>📊 Metrics</h1>
+            <h2>Patient Metrics Summary</h2>
+            <div id="metricsTable" class="table-container"></div>
+            
+            <h2>Confusion Matrices</h2>
+            <div id="confusionTable" class="table-container"></div>
+            <img id="confusionImage" src="" alt="Confusion Matrix" style="max-width: 100%; margin-top: 20px;" onerror="this.style.display='none';">
+            
+            <h2>Model Comparison Statistics</h2>
+            <div id="modelComparisonTable" class="table-container"></div>
+        </div>
+
+        <!-- Calibration Page -->
+        <div id="calibration" class="page">
+            <h1>📉 Calibration</h1>
+            <div class="controls">
+                <select id="calibrationModel">
+                    <option value="RF">RF</option>
+                    <option value="XGB">XGB</option>
+                    <option value="CNN">CNN</option>
+                </select>
+                <select id="calibrationType">
+                    <option value="raw">raw</option>
+                    <option value="calibrated">calibrated</option>
+                </select>
+            </div>
+            <img id="calibrationPlot" src="" alt="Calibration Plot" style="max-width: 100%; margin-top: 20px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="warning" style="display:none;">Calibration plot not found</div>
+            
+            <h2>Calibration Summary</h2>
+            <div id="calibrationSummaryTable" class="table-container"></div>
+        </div>
+
+        <!-- Uncertainty & Coverage Page -->
+        <div id="uncertainty" class="page">
+            <h1>🎯 Uncertainty & Coverage</h1>
+            <h2>CNN Uncertainty Analysis</h2>
+            <div id="uncertaintyTable" class="table-container"></div>
+            
+            <h2>Coverage vs Performance</h2>
+            <div id="coverageTable" class="table-container"></div>
+            
+            <h2>Coverage Curve</h2>
+            <img id="coverageCurveImg" src="" alt="Coverage Curve" style="max-width: 100%;" onerror="this.style.display='none';">
+        </div>
+
+        <!-- SHAP Page -->
+        <div id="shap" class="page">
+            <h1>🔍 Explainability (SHAP)</h1>
+            <h2>Global SHAP Summary</h2>
+            <img id="shapGlobal" src="" alt="Global SHAP Summary" style="max-width: 100%;" onerror="this.style.display='none';">
+            
+            <h2>Local SHAP Explanations</h2>
+            <select id="shapCaseSelect" onchange="loadShapLocal()">
+                <option value="">Select Case...</option>
+            </select>
+            <img id="shapLocal" src="" alt="Local SHAP" style="max-width: 100%; margin-top: 20px;" onerror="this.style.display='none';">
+        </div>
+
+        <!-- AI Reports Page -->
+        <div id="reports" class="page">
+            <h1>🤖 AI Reports</h1>
+            <h2>Report Index</h2>
+            <div id="reportsIndexTable" class="table-container"></div>
+            
+            <h2>Report Images</h2>
+            <select id="reportCaseSelect" onchange="loadReportImage()">
+                <option value="">Select Case Report...</option>
+            </select>
+            <img id="reportImage" src="" alt="Case Report" style="max-width: 100%; margin-top: 20px;" onerror="this.style.display='none';">
+        </div>
+
+        <!-- Configuration Page -->
+        <div id="config" class="page">
+            <h1>⚙️ Configuration</h1>
+            <pre id="configJson" class="json-viewer"></pre>
+        </div>
+
+        <!-- File Checker Page -->
+        <div id="checker" class="page">
+            <h1>✅ File Checker</h1>
+            <div id="fileCheckerResults"></div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
+

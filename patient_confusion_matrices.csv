@@ -1,0 +1,4 @@
+model,TN,FP,FN,TP,total
+RF,3,0,30,22,55
+XGB,3,0,16,36,55
+CNN,0,3,8,44,55
